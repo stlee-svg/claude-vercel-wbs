@@ -59,3 +59,6 @@ ehthumbs.db
 # ── Claude Code — per-machine settings only ───────────────
 # .claude/skills/ 는 프로젝트 공용이므로 커밋 대상.
 .claude/settings.local.json
+
+# ── Playwright MCP (Claude Code 브라우저 검증 임시 파일) ──────
+.playwright-mcp/
