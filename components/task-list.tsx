@@ -1,20 +1,32 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Box, Button, Flex, Text } from '@chakra-ui/react'
 import { TaskRow } from '@/components/task-row'
 import { TaskFormModal } from '@/components/task-form-modal'
 import { DeleteConfirmDialog } from '@/components/delete-confirm-dialog'
 import { EmptyState } from '@/components/empty-state'
+import { buildFlatTree } from '@/lib/utils/task-tree'
 import type { Task, TaskStatus } from '@/lib/types'
 
 export function TaskList() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set())
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [createParentId, setCreateParentId] = useState<string | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; childCount: number } | null>(null)
+
+  const flatNodes = useMemo(() => buildFlatTree(tasks, collapsed), [tasks, collapsed])
+
+  const handleToggle = useCallback((taskId: string) => {
+    setCollapsed((prev) => {
+      const next = new Set(prev)
+      next.has(taskId) ? next.delete(taskId) : next.add(taskId)
+      return next
+    })
+  }, [])
 
   const fetchTasks = useCallback(async () => {
     const res = await fetch('/api/tasks')
@@ -122,10 +134,14 @@ export function TaskList() {
       {tasks.length === 0 ? (
         <EmptyState onAddTask={handleAddTask} />
       ) : (
-        tasks.map((task) => (
+        flatNodes.map(({ task, depth, hasChildren }) => (
           <TaskRow
             key={task.id}
             task={task}
+            depth={depth}
+            hasChildren={hasChildren}
+            isExpanded={!collapsed.has(task.id)}
+            onToggle={handleToggle}
             onEdit={setEditingTask}
             onAddChild={handleAddChild}
             onDelete={handleDeleteRequest}

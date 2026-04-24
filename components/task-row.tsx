@@ -6,17 +6,32 @@ import type { Task, TaskStatus } from '@/lib/types'
 
 interface TaskRowProps {
   task: Task
+  depth: number
+  hasChildren: boolean
+  isExpanded: boolean
+  onToggle: (taskId: string) => void
   onEdit: (task: Task) => void
   onAddChild: (parentId: string) => void
   onDelete: (taskId: string) => void
   onStatusChange: (taskId: string, newStatus: TaskStatus) => void
 }
 
-export function TaskRow({ task, onEdit, onAddChild, onDelete, onStatusChange }: TaskRowProps) {
+export function TaskRow({
+  task,
+  depth,
+  hasChildren,
+  isExpanded,
+  onToggle,
+  onEdit,
+  onAddChild,
+  onDelete,
+  onStatusChange,
+}: TaskRowProps) {
   return (
     <Flex
       align="center"
-      px={4}
+      style={{ paddingLeft: `${16 + depth * 24}px` }}
+      pr={4}
       py={3}
       borderBottom="1px solid"
       borderColor="gray.100"
@@ -24,6 +39,24 @@ export function TaskRow({ task, onEdit, onAddChild, onDelete, onStatusChange }: 
       _hover={{ bg: 'gray.50', cursor: 'pointer' }}
       onClick={() => onEdit(task)}
     >
+      {/* ▼/▶ 펼침/접힘 아이콘 */}
+      <Box
+        w="18px"
+        flexShrink={0}
+        fontSize="10px"
+        color="gray.400"
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        cursor={hasChildren ? 'pointer' : 'default'}
+        onClick={(e) => {
+          e.stopPropagation()
+          if (hasChildren) onToggle(task.id)
+        }}
+      >
+        {hasChildren ? (isExpanded ? '▼' : '▶') : null}
+      </Box>
+
       {/* 제목 / 담당자 */}
       <Box flex="1" minW={0}>
         <Text fontSize="sm" fontWeight="medium" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
