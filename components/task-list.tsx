@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/empty-state'
 import { buildFlatTree } from '@/lib/utils/task-tree'
 import { exportTasksToCsv } from '@/lib/utils/csv'
 import { CsvImportDialog } from '@/components/csv-import-dialog'
+import { GanttView } from '@/components/gantt-view'
 import type { Task, TaskStatus } from '@/lib/types'
 
 export function TaskList() {
@@ -20,6 +21,7 @@ export function TaskList() {
   const [createParentId, setCreateParentId] = useState<string | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; childCount: number } | null>(null)
   const [importOpen, setImportOpen] = useState(false)
+  const [viewMode, setViewMode] = useState<'list' | 'gantt'>('list')
 
   const flatNodes = useMemo(() => buildFlatTree(tasks, collapsed), [tasks, collapsed])
 
@@ -121,6 +123,25 @@ export function TaskList() {
           WBS 작업 목록
         </Text>
         <HStack gap={2}>
+          {/* 목록 / 간트 탭 */}
+          <HStack gap={0} border="1px solid" borderColor="gray.200" borderRadius="md" overflow="hidden">
+            <Button
+              size="sm"
+              variant={viewMode === 'list' ? 'solid' : 'ghost'}
+              borderRadius={0}
+              onClick={() => setViewMode('list')}
+            >
+              목록
+            </Button>
+            <Button
+              size="sm"
+              variant={viewMode === 'gantt' ? 'solid' : 'ghost'}
+              borderRadius={0}
+              onClick={() => setViewMode('gantt')}
+            >
+              간트
+            </Button>
+          </HStack>
           <Button variant="outline" size="sm" onClick={handleExport} disabled={tasks.length === 0}>
             CSV 내보내기
           </Button>
@@ -133,43 +154,58 @@ export function TaskList() {
         </HStack>
       </Flex>
 
-      {/* 컬럼 헤더 */}
-      {tasks.length > 0 && (
-        <Flex px={4} py={2} bg="gray.50" borderBottom="1px solid" borderColor="gray.200" gap={4}>
-          <Box flex="1">
-            <Text fontSize="xs" fontWeight="semibold" color="gray.500">제목 / 담당자</Text>
-          </Box>
-          <Box w="80px">
-            <Text fontSize="xs" fontWeight="semibold" color="gray.500">상태</Text>
-          </Box>
-          <Box w="110px">
-            <Text fontSize="xs" fontWeight="semibold" color="gray.500">진행률</Text>
-          </Box>
-          <Box w="170px">
-            <Text fontSize="xs" fontWeight="semibold" color="gray.500">기간</Text>
-          </Box>
-          <Box w="40px" />
-        </Flex>
+      {/* 간트 뷰 */}
+      {viewMode === 'gantt' && (
+        <GanttView
+          tasks={tasks}
+          collapsed={collapsed}
+          onToggle={handleToggle}
+          onEdit={setEditingTask}
+        />
       )}
 
-      {/* 목록 or 빈 상태 */}
-      {tasks.length === 0 ? (
-        <EmptyState onAddTask={handleAddTask} />
-      ) : (
-        flatNodes.map(({ task, depth, hasChildren }) => (
-          <TaskRow
-            key={task.id}
-            task={task}
-            depth={depth}
-            hasChildren={hasChildren}
-            isExpanded={!collapsed.has(task.id)}
-            onToggle={handleToggle}
-            onEdit={setEditingTask}
-            onAddChild={handleAddChild}
-            onDelete={handleDeleteRequest}
-            onStatusChange={handleStatusChange}
-          />
-        ))
+      {/* 목록 뷰 */}
+      {viewMode === 'list' && (
+        <>
+          {/* 컬럼 헤더 */}
+          {tasks.length > 0 && (
+            <Flex px={4} py={2} bg="gray.50" borderBottom="1px solid" borderColor="gray.200" gap={4}>
+              <Box flex="1">
+                <Text fontSize="xs" fontWeight="semibold" color="gray.500">제목 / 담당자</Text>
+              </Box>
+              <Box w="80px">
+                <Text fontSize="xs" fontWeight="semibold" color="gray.500">상태</Text>
+              </Box>
+              <Box w="110px">
+                <Text fontSize="xs" fontWeight="semibold" color="gray.500">진행률</Text>
+              </Box>
+              <Box w="170px">
+                <Text fontSize="xs" fontWeight="semibold" color="gray.500">기간</Text>
+              </Box>
+              <Box w="40px" />
+            </Flex>
+          )}
+
+          {/* 목록 or 빈 상태 */}
+          {tasks.length === 0 ? (
+            <EmptyState onAddTask={handleAddTask} />
+          ) : (
+            flatNodes.map(({ task, depth, hasChildren }) => (
+              <TaskRow
+                key={task.id}
+                task={task}
+                depth={depth}
+                hasChildren={hasChildren}
+                isExpanded={!collapsed.has(task.id)}
+                onToggle={handleToggle}
+                onEdit={setEditingTask}
+                onAddChild={handleAddChild}
+                onDelete={handleDeleteRequest}
+                onStatusChange={handleStatusChange}
+              />
+            ))
+          )}
+        </>
       )}
 
       {/* 생성 모달 */}
