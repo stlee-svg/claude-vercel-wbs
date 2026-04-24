@@ -1,12 +1,14 @@
 'use client'
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { Box, Button, Flex, Text } from '@chakra-ui/react'
+import { Box, Button, Flex, HStack, Text } from '@chakra-ui/react'
 import { TaskRow } from '@/components/task-row'
 import { TaskFormModal } from '@/components/task-form-modal'
 import { DeleteConfirmDialog } from '@/components/delete-confirm-dialog'
 import { EmptyState } from '@/components/empty-state'
 import { buildFlatTree } from '@/lib/utils/task-tree'
+import { exportTasksToCsv } from '@/lib/utils/csv'
+import { CsvImportDialog } from '@/components/csv-import-dialog'
 import type { Task, TaskStatus } from '@/lib/types'
 
 export function TaskList() {
@@ -17,6 +19,7 @@ export function TaskList() {
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [createParentId, setCreateParentId] = useState<string | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; childCount: number } | null>(null)
+  const [importOpen, setImportOpen] = useState(false)
 
   const flatNodes = useMemo(() => buildFlatTree(tasks, collapsed), [tasks, collapsed])
 
@@ -38,6 +41,17 @@ export function TaskList() {
   useEffect(() => {
     fetchTasks()
   }, [fetchTasks])
+
+  const handleExport = () => {
+    const csv = exportTasksToCsv(tasks)
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `wbs-${new Date().toISOString().slice(0, 10)}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
 
   const handleAddTask = () => {
     setCreateParentId(null)
@@ -106,9 +120,17 @@ export function TaskList() {
         <Text fontWeight="bold" fontSize="lg">
           WBS 작업 목록
         </Text>
-        <Button colorPalette="blue" size="sm" onClick={handleAddTask}>
-          + 작업 추가
-        </Button>
+        <HStack gap={2}>
+          <Button variant="outline" size="sm" onClick={handleExport} disabled={tasks.length === 0}>
+            CSV 내보내기
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setImportOpen(true)}>
+            CSV 불러오기
+          </Button>
+          <Button colorPalette="blue" size="sm" onClick={handleAddTask}>
+            + 작업 추가
+          </Button>
+        </HStack>
       </Flex>
 
       {/* 컬럼 헤더 */}
@@ -182,6 +204,14 @@ export function TaskList() {
         childCount={deleteTarget?.childCount ?? 0}
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDeleteConfirm}
+      />
+
+      {/* CSV Import */}
+      <CsvImportDialog
+        open={importOpen}
+        existingTasks={tasks}
+        onClose={() => setImportOpen(false)}
+        onImportComplete={fetchTasks}
       />
     </Box>
   )
