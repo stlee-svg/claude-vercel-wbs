@@ -6,7 +6,7 @@ name: DB Migrate (Production)
 # 필수 설정 (1회만 수행):
 #   GitHub 저장소 → Settings → Environments → "production" 생성
 #     └─ Secrets → Add secret
-#         이름: PRODUCTION_DATABASE_URL
+#         이름: PRODUCTION_DATABASE_URL2
 #         값 : Supabase Dashboard → Settings → Database → Connection string
 #              의 "Session" 또는 "Direct connection" (port 5432) 문자열
 #     ※ Transaction pooler(6543) 문자열을 넣으면 prepared statement 충돌로 실패합니다.
@@ -48,5 +48,5 @@ jobs:
 
       - name: Apply Drizzle migrations
         env:
-          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL2 }}
         run: npx drizzle-kit migrate
