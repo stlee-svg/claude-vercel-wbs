@@ -167,6 +167,11 @@ export function TaskList() {
         open={!!editingTask}
         mode="edit"
         initialData={editingTask ?? undefined}
+        parentTitle={
+          editingTask?.parentId
+            ? tasks.find((t) => t.id === editingTask.parentId)?.title
+            : undefined
+        }
         onClose={() => setEditingTask(null)}
         onSuccess={handleEditSuccess}
       />

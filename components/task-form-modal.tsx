@@ -19,6 +19,7 @@ interface TaskFormModalProps {
   mode: 'create' | 'edit'
   initialData?: Task
   parentId?: string | null
+  parentTitle?: string
   onClose: () => void
   onSuccess: (task: Task) => void
 }
@@ -28,6 +29,7 @@ export function TaskFormModal({
   mode,
   initialData,
   parentId,
+  parentTitle,
   onClose,
   onSuccess,
 }: TaskFormModalProps) {
@@ -121,6 +123,13 @@ export function TaskFormModal({
               {serverError && (
                 <Field.Root invalid>
                   <Field.ErrorText>{serverError}</Field.ErrorText>
+                </Field.Root>
+              )}
+
+              {mode === 'edit' && parentTitle && (
+                <Field.Root>
+                  <Field.Label>상위 작업</Field.Label>
+                  <Input value={parentTitle} readOnly bg="gray.50" color="gray.600" />
                 </Field.Root>
               )}
 
