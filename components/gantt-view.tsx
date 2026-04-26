@@ -129,8 +129,6 @@ export function GanttView({ tasks, collapsed, onToggle, onEdit }: GanttViewProps
                   borderColor="gray.200"
                   style={{ paddingLeft: `${12 + depth * 20}px` }}
                   gap={1}
-                  cursor="pointer"
-                  onClick={() => onEdit(task)}
                 >
                   {/* ▼/▶ 아이콘 */}
                   <Box
