@@ -49,8 +49,7 @@ export async function PATCH(
 
     const [updated] = await db
       .update(tasks)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .set(updateData as any)
+      .set(updateData as Parameters<ReturnType<typeof db.update>['set']>[0])
       .where(eq(tasks.id, id))
       .returning()
 
