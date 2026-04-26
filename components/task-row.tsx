@@ -1,7 +1,8 @@
-import { Box, Flex, IconButton, Menu, Text } from '@chakra-ui/react'
+import { Badge, Box, Flex, IconButton, Menu, Text } from '@chakra-ui/react'
 import { StatusBadge } from '@/components/status-badge'
 import { ProgressBar } from '@/components/progress-bar'
 import { cycleStatus } from '@/lib/utils/task-status'
+import { isOverdue } from '@/lib/utils/gantt'
 import type { Task, TaskStatus } from '@/lib/types'
 
 interface TaskRowProps {
@@ -9,6 +10,7 @@ interface TaskRowProps {
   depth: number
   hasChildren: boolean
   isExpanded: boolean
+  today: Date
   onToggle: (taskId: string) => void
   onEdit: (task: Task) => void
   onAddChild: (parentId: string) => void
@@ -21,6 +23,7 @@ export function TaskRow({
   depth,
   hasChildren,
   isExpanded,
+  today,
   onToggle,
   onEdit,
   onAddChild,
@@ -86,11 +89,22 @@ export function TaskRow({
 
       {/* 기간 */}
       <Box w="170px" flexShrink={0}>
-        <Text fontSize="xs" color="gray.500">
-          {task.startDate && task.dueDate
+        {(() => {
+          const overdue = isOverdue(task, today)
+          const dateText = task.startDate && task.dueDate
             ? `${task.startDate} ~ ${task.dueDate}`
-            : task.startDate || task.dueDate || '-'}
-        </Text>
+            : task.startDate || task.dueDate || '-'
+          return (
+            <Flex align="center" gap={1}>
+              <Text fontSize="xs" color={overdue ? 'red.500' : 'gray.500'}>
+                {dateText}
+              </Text>
+              {overdue && (
+                <Badge colorPalette="red" size="sm">지남</Badge>
+              )}
+            </Flex>
+          )
+        })()}
       </Box>
 
       {/* ⋯ 메뉴 */}

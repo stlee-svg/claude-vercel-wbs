@@ -25,6 +25,12 @@ export function TaskList() {
 
   const flatNodes = useMemo(() => buildFlatTree(tasks, collapsed), [tasks, collapsed])
 
+  const today = useMemo(() => {
+    const d = new Date()
+    d.setHours(0, 0, 0, 0)
+    return d
+  }, [])
+
   const handleToggle = useCallback((taskId: string) => {
     setCollapsed((prev) => {
       const next = new Set(prev)
@@ -197,6 +203,7 @@ export function TaskList() {
                 depth={depth}
                 hasChildren={hasChildren}
                 isExpanded={!collapsed.has(task.id)}
+                today={today}
                 onToggle={handleToggle}
                 onEdit={setEditingTask}
                 onAddChild={handleAddChild}
