@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp'
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp'
-import { z } from 'zod'
+import * as z from 'zod/v4'
 import { asc, eq } from 'drizzle-orm'
 import { db } from '@/lib/db'
 import { tasks } from '@/lib/db/schema'
@@ -32,7 +32,7 @@ function checkProtocolVersion(req: NextRequest): Response | null {
 
 const datePattern = /^\d{4}-\d{2}-\d{2}$/
 
-const createTaskSchema = {
+const createTaskSchema = z.object({
   title: z.string().min(1, '제목은 필수입니다.'),
   description: z.string().optional(),
   assignee: z.string().optional(),
@@ -41,9 +41,9 @@ const createTaskSchema = {
   startDate: z.string().regex(datePattern, 'YYYY-MM-DD 형식이어야 합니다.').optional(),
   dueDate: z.string().regex(datePattern, 'YYYY-MM-DD 형식이어야 합니다.').optional(),
   parentId: z.string().uuid().optional(),
-}
+})
 
-const updateTaskSchema = {
+const updateTaskSchema = z.object({
   id: z.string().uuid('유효한 UUID여야 합니다.'),
   title: z.string().min(1).optional(),
   description: z.string().nullable().optional(),
@@ -53,7 +53,7 @@ const updateTaskSchema = {
   startDate: z.string().regex(datePattern).nullable().optional(),
   dueDate: z.string().regex(datePattern).nullable().optional(),
   parentId: z.string().uuid().nullable().optional(),
-}
+})
 
 // ---------- McpServer 빌더 ----------
 
@@ -73,7 +73,7 @@ function buildServer(): McpServer {
     'get_task',
     {
       description: 'UUID로 특정 작업 하나를 조회합니다.',
-      inputSchema: { id: z.string().uuid() },
+      inputSchema: z.object({ id: z.string().uuid() }),
     },
     async ({ id }) => {
       const [task] = await db.select().from(tasks).where(eq(tasks.id, id)).limit(1)
@@ -177,7 +177,7 @@ function buildServer(): McpServer {
     'delete_task',
     {
       description: '작업을 삭제합니다. 하위 작업도 cascade로 함께 삭제됩니다.',
-      inputSchema: { id: z.string().uuid() },
+      inputSchema: z.object({ id: z.string().uuid() }),
     },
     async ({ id }) => {
       const [existing] = await db.select().from(tasks).where(eq(tasks.id, id)).limit(1)
