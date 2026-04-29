@@ -14,12 +14,14 @@
   "dependencies": {
     "@chakra-ui/react": "^3.0.0",
     "@emotion/react": "^11.13.0",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@supabase/supabase-js": "^2.45.0",
     "drizzle-orm": "^0.33.0",
     "next": "^14.2.0",
     "postgres": "^3.4.0",
     "react": "^18.3.0",
-    "react-dom": "^18.3.0"
+    "react-dom": "^18.3.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/node": "^20",
