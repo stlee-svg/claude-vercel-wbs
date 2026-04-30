@@ -200,6 +200,22 @@ async function handleMcp(req: NextRequest): Promise<Response> {
   const transport = new WebStandardStreamableHTTPServerTransport({ sessionIdGenerator: undefined })
   const server = buildServer()
   await server.connect(transport)
+
+  // Claude Code 등 일부 클라이언트가 Accept 헤더에 text/event-stream을 빠뜨리는 경우 패치
+  const accept = req.headers.get('accept') ?? ''
+  if (!accept.includes('text/event-stream')) {
+    const headers = new Headers(req.headers)
+    headers.set('accept', 'application/json, text/event-stream')
+    const patched = new Request(req.url, {
+      method: req.method,
+      headers,
+      body: req.body,
+      // @ts-expect-error duplex는 스트리밍 body 전달에 필요 (fetch 표준 확장)
+      duplex: 'half',
+    })
+    return transport.handleRequest(patched)
+  }
+
   return transport.handleRequest(req)
 }
 
